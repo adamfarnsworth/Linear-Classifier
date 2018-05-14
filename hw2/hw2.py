@@ -1,6 +1,26 @@
 import numpy as np
 import collections
 
+# computing precision TP/Phat
+def precX(TP,Phat):
+    return float(float(TP) / float(Phat))
+
+# computing accuracy rates (tp + tn)/(p+n)
+def accRateX(TP, TN, P, N):
+    return float(float(TP + TN) / float(P + N))
+
+# computing false positive rates FP/N
+def fprX(FP,N):
+    return float(float(FP) / float(N))
+
+# compute true positive rate TP/P
+def tprX(TP,P):
+    return float(float(TP) / float(P))
+
+# compute error rate (fp+fn)/(p+n)
+def errRateX(FP,FN,P,N):
+    return float(float(FP + FN) / float(P + N))
+
 def findScalar(x,y):
    return x - y
 
@@ -87,21 +107,57 @@ def run_train_test(training_input, testing_input):
             countC += 1
             if testsOfB + testsOfA < testCount:
                 tpC +=1
-        
-    fpA = testsOfA - tpA
-    fpB = testsOfB - tpB
-    fpC = testsOfC - tpC
-
     
-    tpr = float((float(tpA)/float(testsOfA) + float(tpB)/float(testsOfB) + float(tpC)/float(testsOfC) )/3)
-    fpr = float((float(fpA)/float(testsOfA) + float(fpB)/float(testsOfB) + float(fpC)/float(testsOfC) )/3)
-    #error_rate 
-    #accuracy
-    #precision
+    # computing false negative
+    fnA = testsOfA - tpA
+    fnB = testsOfB - tpB
+    fnC = testsOfC - tpC
+
+    # computing true negatives
+    tnA = countB + countC - fnA
+    tnB = countA + countC - fnB
+    tnC = countA + countB - fnC
+
+    # computing false positives
+    fpA = countA - tpA
+    fpB = countB - tpB
+    fpC = countC - tpC
+
+    # computing true positve rates TP/P
+    tprA = tprX(tpA, testsOfA)
+    tprB = tprX(tpB, testsOfB)
+    tprC = tprX(tpC, testsOfC)
+
+    # computing false positive rates FP/N
+    fprA = fprX(fpA, testsOfB + testsOfC)
+    fprB = fprX(fpB, testsOfA + testsOfC)
+    fprC = fprX(fpC, testsOfA + testsOfB)
     
-        
+    # computing error rates (fp+fn)/(p+n)
+    errRateA = errRateX(fpA,fnA,testsOfA,testsOfB + testsOfC)
+    errRateB = errRateX(fpB,fnB,testsOfB,testsOfA + testsOfC)
+    errRateC = errRateX(fpC,fnC,testsOfC,testsOfA + testsOfB) 
+    
+    # computing accuracy rates (tp + tn)/(p+n)
+    accRateA = accRateX(tpA, tnA, testsOfA, testsOfB + testsOfC)
+    accRateB = accRateX(tpB, tnB, testsOfB, testsOfA + testsOfC)
+    accRateC = accRateX(tpC, tnC, testsOfC, testsOfA + testsOfB)
 
+    # computing precision TP/Phat where Phat = TP + FP
+    precA = precX(tpA, tpA + fpA)
+    precB = precX(tpB, tpB + fpB)
+    precC = precX(tpC, tpC + fpC)
 
+    tpr = float((tprA + tprB + tprC) / 3)
+    fpr = float((fprA + fprB + fprC) / 3)
+    error_rate = float((errRateA + errRateB + errRateC) / 3)
+    accuracy = float((accRateA + accRateB + accRateC) / 3)
+    precision = float((precA + precB + precB) / 3)
+    
+    print(tpr, fpr, error_rate, accuracy, precision)    
+    testDic = {'tpr': tpr, 'fpr': fpr,'error_rate': error_rate,'accuracy': accuracy,'precision': precision}
+    print(testDic)
+    return testDic
 
 
     # TODO: IMPLEMENT
