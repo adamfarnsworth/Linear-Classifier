@@ -2,10 +2,10 @@ import numpy as np
 import collections
 
 def findScalar(x,y):
-   return x-y
+   return x - y
 
 def findCenter(x,y):
-    return (x+y)/2
+    return (x + y) / 2
 
 #input: point -> value to be checked
 #       x,y -> A/B, A/C, B/C
@@ -16,12 +16,12 @@ def valueGreater(point, x, y):
     scalar = findScalar(x,y)
     
     total = 0
-    # a(x-x1) + ... + n(z - z1)
-    for i in range(0, point.size):
-        total += scalar[i]*(point[i] - center[i])
+    # a(x-x1) + ...  + n(z - z1)
+    for i in range(0, point.size - 1):
+        total += scalar[i] * (point[i] - center[i])
     
     # check if above or below, which determines if its x or yx
-    if total > 0:
+    if total >= 0:
         return True   
     return False
 
@@ -33,32 +33,75 @@ def run_train_test(training_input, testing_input):
 
     # our loop sizes
     dimensionOfData = training[0][0]
-    examplesOfA = training[0][1]
-    examplesOfB = training[0][2]
-    examplesOfC = training[0][3]
+    examplesOfA = int(training[0][1])
+    examplesOfB = int(training[0][2])
+    examplesOfC = int(training[0][3])
 
     # centroids for our classes
-    centroidA = np.zeros(dimensionOfData)
-    centroidB = np.zeros(dimensionOfData)
-    centroidC = np.zeros(dimensionOfData)
+    centroidA = np.zeros(int(dimensionOfData))
+    centroidB = np.zeros(int(dimensionOfData))
+    centroidC = np.zeros(int(dimensionOfData))
 
     # adding all values in A, then averaging them
     for i in range(1, examplesOfA + 1):
         centroidA += training[i]
-    centroidA = centroidA/examplesOfA
+    centroidA = centroidA / examplesOfA
 
     # adding all values in B, then averaging them
     for i in range(1, examplesOfB + 1):
         centroidB += training[examplesOfA + i]
-    centroidB = centroidB/examplesOfB
+    centroidB = centroidB / examplesOfB
 
     # adding all values in C, then averaging them
     for i in range(1, examplesOfC + 1):
         centroidC += training[examplesOfA + examplesOfB + i]
-    centroidC = centroidC/examplesOfC
+    centroidC = centroidC / examplesOfC
 
-    if valueGreater(training[3], training[3], training[3]):
-        print("hi")
+    # count for how many times we think its that class
+    countA = 0
+    countB = 0
+    countC = 0
+    # count for how may times we were right
+    tpA = 0
+    tpB = 0
+    tpC = 0
+    testCount = 0
+
+    testsOfA = int(testing[0][1])
+    testsOfB = int(testing[0][2])
+    testsOfC = int(testing[0][3])
+    # running testing data in model
+    for i in testing[1:]:
+        testCount +=1
+
+        if valueGreater(i, centroidA, centroidB):
+            countA += 1
+            if testCount <= testsOfA:
+                tpA +=1
+
+        elif valueGreater(i, centroidB, centroidC):
+            countB += 1
+            if testsOfA < testCount <= testsOfA + testsOfB:
+                tpB +=1
+        else:
+            countC += 1
+            if testsOfB + testsOfA < testCount:
+                tpC +=1
+        
+    fpA = testsOfA - tpA
+    fpB = testsOfB - tpB
+    fpC = testsOfC - tpC
+
+    
+    tpr = float((float(tpA)/float(testsOfA) + float(tpB)/float(testsOfB) + float(tpC)/float(testsOfC) )/3)
+    fpr = float((float(fpA)/float(testsOfA) + float(fpB)/float(testsOfB) + float(fpC)/float(testsOfC) )/3)
+    #error_rate 
+    #accuracy
+    #precision
+    
+        
+
+
 
 
     # TODO: IMPLEMENT
@@ -86,7 +129,7 @@ if __name__ == "__main__":
     """
     import sys
     training_input = parse_file(sys.argv[1])
-    #"./data/training1.txt" 
+    #"./data/training1.txt"
     
     testing_input = parse_file(sys.argv[2])
     #"./data/testing1.txt"
