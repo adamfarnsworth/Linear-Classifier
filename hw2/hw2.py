@@ -37,10 +37,10 @@ def valueGreater(point, x, y):
     
     total = 0
     # a(x-x1) + ...  + n(z - z1)
-    for i in range(0, point.size - 1):
+    for i in range(0, point.size):
         total += scalar[i] * (point[i] - center[i])
     
-    # check if above or below, which determines if its x or yx
+    # check if above or below, which determines if its x or y
     if total >= 0:
         return True   
     return False
@@ -94,39 +94,49 @@ def run_train_test(training_input, testing_input):
     for i in testing[1:]:
         testCount +=1
 
-        if valueGreater(i, centroidA, centroidB):
-            countA += 1
-            if testCount <= testsOfA:
-                tpA +=1
-
-        elif valueGreater(i, centroidB, centroidC):
+        if valueGreater(i, centroidA, centroidB): #A/B
+            if valueGreater(i, centroidA, centroidC): #A/C
+                countA += 1
+                if testCount <= testsOfA:
+                    tpA +=1
+            else:
+                countC += 1
+                if (testsOfB + testsOfA) < testCount:
+                    tpC +=1
+        elif valueGreater(i, centroidB, centroidC): #B/C
             countB += 1
-            if testsOfA < testCount <= testsOfA + testsOfB:
+            if testsOfA < testCount <= (testsOfA + testsOfB):
                 tpB +=1
         else:
             countC += 1
-            if testsOfB + testsOfA < testCount:
+            if (testsOfA + testsOfB) < testCount:
                 tpC +=1
+
+
     
     # computing false negative
     fnA = testsOfA - tpA
     fnB = testsOfB - tpB
     fnC = testsOfC - tpC
 
+
     # computing true negatives
     tnA = countB + countC - fnA
     tnB = countA + countC - fnB
     tnC = countA + countB - fnC
+
 
     # computing false positives
     fpA = countA - tpA
     fpB = countB - tpB
     fpC = countC - tpC
 
+
     # computing true positve rates TP/P
     tprA = tprX(tpA, testsOfA)
     tprB = tprX(tpB, testsOfB)
     tprC = tprX(tpC, testsOfC)
+
 
     # computing false positive rates FP/N
     fprA = fprX(fpA, testsOfB + testsOfC)
@@ -152,10 +162,14 @@ def run_train_test(training_input, testing_input):
     fpr = float((fprA + fprB + fprC) / 3)
     error_rate = float((errRateA + errRateB + errRateC) / 3)
     accuracy = float((accRateA + accRateB + accRateC) / 3)
-    precision = float((precA + precB + precB) / 3)
+    precision = float((precA + precB + precC) / 3)
     
-    print(tpr, fpr, error_rate, accuracy, precision)    
     testDic = {'tpr': tpr, 'fpr': fpr,'error_rate': error_rate,'accuracy': accuracy,'precision': precision}
+    
+    print("TN", tnA, tnB, tnC)
+    print("FP", fpA, fpB, fpC)
+    print("FN", fnA, fnB, fnC)
+    print("TP", tpA, tpB, tpC)
     print(testDic)
     return testDic
 
@@ -192,30 +206,3 @@ if __name__ == "__main__":
     
 
     run_train_test(training_input, testing_input)
-
-
-    #    """
-    #Implement the training and testing procedure here. You are permitted
-    #to use additional functions but DO NOT change this function definition. 
-    #You are you are permitted to use the numpy library but you must write 
-    #your own code for the linear classifier. 
-
-    #Inputs:
-    #    training_input: list form of the training file
-    #        e.g. [[3, 5, 5, 5],[.3, .1, .4],[.3, .2, .1]...]
-    #    testing_input: list form of the testing file
-
-    #Output:
-    #    Dictionary of result values 
-
-    #    IMPORTANT: YOU MUST USE THE SAME DICTIONARY KEYS SPECIFIED
-        
-    #    Example:
-    #        return {
-    #            "tpr": true_positive_rate,
-    #            "fpr": false_positive_rate,
-    #            "error_rate": error_rate,
-    #            "accuracy": accuracy,
-    #            "precision": precision
-    #        }
-    #"""
